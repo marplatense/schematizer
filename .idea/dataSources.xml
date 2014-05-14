@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourceManagerImpl" format="xml" hash="3233729185">
+    <data-source source="LOCAL" name="SmD" uuid="ed627f72-6ef8-4cb7-ba8e-5c4efdecde7d">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://127.0.0.1:5432/smd</jdbc-url>
+      <user-name>mariano</user-name>
+      <user-password>dfc5dfdedfd8dfc5dfc6dfcfdfdedfd8dfcbdfdcdfcbdfc6dfcbdfcedfc4dfcb</user-password>
+      <libraries />
+    </data-source>
+  </component>
+</project>
+

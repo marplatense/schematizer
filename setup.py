@@ -24,4 +24,4 @@ config = {
     'name': 'Schematizer'
 }
 
-setup(, requires=['colander']**config)
+setup(requires=['colander','sqlalchemy>=0.9', 'colander', 'deform', 'webtest', 'cornice', 'python-dateutil'], **config)
