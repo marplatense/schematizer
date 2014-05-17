@@ -43,13 +43,15 @@ class mDate(colander.Date):
 
     def deserialize(self, node, cstruct):
         if cstruct is not colander.null:
-            if isinstance(cstruct, datetime.date):
+            if isinstance(cstruct, (datetime.date, datetime.datetime)):
                 return cstruct
-            elif isinstance(cstruct, str):
-                return parser.parse(cstruct)
-            else:
-                raise(colander.Invalid(node, '{0} cannot be parsed to date'.
-                                       format(cstruct)))
+            elif isinstance(cstruct, (str, unicode)):
+                try:
+                    return parser.parse(cstruct)
+                except Exception:
+                    pass
+            raise(colander.Invalid(node, '{0} cannot be parsed to date'.
+                                          format(cstruct)))
         else:
             return None
 

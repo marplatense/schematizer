@@ -49,7 +49,7 @@ class SimpleModelTest(unittest.TestCase):
                             'value':decimal.Decimal('1.55'),
                             'memo': u"This is an example of text to validate. Please do and check: ñ"}
         try:
-            bs = self.basic(self.session, **dict_to_validate)
+            self.basic(self.session, **dict_to_validate)
         except Exception as e:
             self.assertEqual(len(e.children), 1)
             self.assertDictEqual(e.children[0].asdict(), {'name':u'Longer than maximum length 100'})
@@ -58,7 +58,7 @@ class SimpleModelTest(unittest.TestCase):
         dict_to_validate = {'name':'This is a test', 'sdate':datetime.datetime.now(),
                             'value':u'aa', 'memo': u"This is an example of text to validate. Please do and check: ñ"}
         try:
-            bs = self.basic(self.session, **dict_to_validate)
+            self.basic(self.session, **dict_to_validate)
         except Exception as e:
             self.assertEqual(len(e.children), 1)
             self.assertDictEqual(e.children[0].asdict(), {'value': u'"aa" is not a number'})
@@ -68,7 +68,7 @@ class SimpleModelTest(unittest.TestCase):
                             'value':decimal.Decimal('1.55'), 'memo': u"This is an example of text to validate. "\
                                                                      u"Please do and check: ñ"}
         try:
-            bs = self.basic(self.session, **dict_to_validate)
+            self.basic(self.session, **dict_to_validate)
         except Exception as e:
             self.assertEqual(len(e.children), 1)
             self.assertDictEqual(e.children[0].asdict(), {'sdate': 'aa cannot be parsed to date'})
@@ -78,4 +78,55 @@ class SimpleModelTest(unittest.TestCase):
                             'value':decimal.Decimal('1.55'), 'memo': u"This is an example of text to validate. " \
                                                                      u"Please do and check: ñ"}
         bs = self.basic(self.session, **dict_to_validate)
-        self.assertEqual(bs.sdate, datetime.date(2013-04-01))
+        self.assertEqual(bs.sdate, datetime.datetime(2013,04,01))
+
+    def test_date_object(self):
+        class Dummy(object):
+            def __repr__(self):
+                return 'DummyObject'
+        dict_to_validate = {'name':'This is a test', 'sdate':Dummy(),
+                            'value':decimal.Decimal('1.55'), 'memo': u"This is an example of text to validate. " \
+                                                                     u"Please do and check: ñ"}
+        try:
+            self.basic(self.session, **dict_to_validate)
+        except Exception as e:
+            self.assertEqual(len(e.children), 1)
+            self.assertDictEqual(e.children[0].asdict(), {'sdate': 'DummyObject cannot be parsed to date'})
+
+    def test_insert_id(self):
+        dict_to_validate = {'name':'This is THE test', 'sdate':u'04-01-2013',
+                            'value':decimal.Decimal('1.55'), 'memo': u"This is an example of text to validate. " \
+                                                                     u"Please do and check: ñ"}
+        bs = self.basic(self.session, **dict_to_validate)
+        self.session.add(bs)
+        self.session.commit()
+        new_bs = self.session.query(self.basic).one()
+        self.assertEqual(new_bs.name, u'This is THE test')
+        self.assertIsNotNone(new_bs.id)
+
+    def test_unique_name(self):
+        dict_to_validate = {'name':'This is an unique test', 'sdate':u'04-01-2013',
+                            'value':decimal.Decimal('1.55'), 'memo': u"This is an example of text to validate. " \
+                                                                     u"Please do and check: ñ"}
+        bs = self.basic(self.session, **dict_to_validate)
+        self.session.add(bs)
+        self.session.commit()
+        dict_to_validate = {'name':'This is an unique test', 'sdate':u'04-01-2013',
+                            'value':decimal.Decimal('1.55'), 'memo': u"This is an example of text to validate. " \
+                                                                     u"Please do and check: ñ"}
+        try:
+            self.basic(self.session, **dict_to_validate)
+        except Exception as e:
+            self.assertEqual(len(e.children), 1)
+            self.assertDictEqual(e.children[0].asdict(), {'name': 'This is an unique test already exists'})
+
+    def test_drop_id(self):
+        dict_to_validate = {'name':'This is THE REAL test', 'sdate':u'04-01-2013', 'id':1001,
+                            'value':decimal.Decimal('1.55'), 'memo': u"This is an example of text to validate. " \
+                                                                     u"Please do and check: ñ"}
+        bs = self.basic(self.session, **dict_to_validate)
+        self.session.add(bs)
+        self.session.commit()
+        new_bs = self.session.query(self.basic).one()
+        self.assertEqual(new_bs.name, u'This is THE REAL test')
+        self.assertNotEqual(new_bs.id, 1001)
